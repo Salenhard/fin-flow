@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import repository.UserRepository;
@@ -40,12 +42,15 @@ public class UserServiceImpl implements UserService {
     public void deleteByUsername(String username) {
         log.debug("Deleting user by username={}", username);
         userRepository.deleteByUsername(username);
+        log.info("User with username={} deleted", username);
     }
 
     @Override
     public User save(User user) {
         log.debug("Saving user={}", user);
-        return userRepository.save(user);
+        user = userRepository.save(user);
+        log.info("User with username={} saved", user.getUsername());
+        return user;
     }
 
     @Override
@@ -53,8 +58,10 @@ public class UserServiceImpl implements UserService {
         log.debug("Updating user with id={}", id);
         return userRepository.findById(id).map(user1 -> {
             user1.setUsername(user.getUsername());
-            user1.setRole(user.getRole());
-            return userRepository.save(user);
+            user1.setRoles(user.getRoles());
+            user1 = userRepository.save(user1);
+            log.info("User with username={} updated", user.getUsername());
+            return user1;
         }).orElseThrow(() -> {
             log.warn("User with id={} not found", id);
             return new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -65,11 +72,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(UUID id) {
         log.debug("Finding user with id={}", id);
-        return userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("User with id={} not found", id);
                     return new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "User with id %s is not found!".formatted(String.valueOf(id)));
                 });
+        log.info("User with username={} found", user.getUsername());
+        return user;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.findByUsername(username);
     }
 }

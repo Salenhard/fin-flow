@@ -1,7 +1,6 @@
 package controller;
 
 import entities.User;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,14 +21,9 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
 
-    @DeleteMapping("/{username}")
-    public void deleteByUsername(@PathVariable String username) {
-        log.debug("delete user by username: {}", username);
-        userService.deleteByUsername(username);
-    }
-
     @GetMapping
-    public @ResponseBody PagedModel<User> findAll(@RequestParam Optional<Integer> page, @RequestParam Optional<Integer> size) {
+    public @ResponseBody PagedModel<User> findAll(@RequestParam Optional<Integer> page,
+                                                  @RequestParam Optional<Integer> size) {
         log.debug("find all users by page: {}, size: {}", page, size);
         Pageable pageable = PageRequest.of(page.orElse(0), size.orElse(10));
         Page<User> users = userService.findAll(pageable);
@@ -48,14 +42,9 @@ public class UserController {
         return userService.findByUsername(username);
     }
 
-    @PostMapping
-    public @ResponseBody User save(@RequestBody User user) {
-        log.debug("save user: {}", user);
-        return userService.save(user);
-    }
-
-    @PutMapping
-    public @ResponseBody User update(@RequestBody User user, @RequestBody UUID id) {
+    @PutMapping("/{id}")
+    public @ResponseBody User update(@RequestBody User user,
+                                     @PathVariable UUID id) {
         log.debug("update user: {}", user);
         return userService.update(user, id);
     }
