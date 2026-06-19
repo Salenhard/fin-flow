@@ -6,11 +6,11 @@ import entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-//TODO add mapper
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     UserRequestDto userToUserRequestDto(User user);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "authorities", ignore = true)
