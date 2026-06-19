@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import service.UserService;
@@ -26,9 +27,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public @ResponseBody ResponseEntity<UserResponseDto> save(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public @ResponseBody ResponseEntity<UserResponseDto> save(@Valid @RequestBody UserRequestDto userRequestDto, @AuthenticationPrincipal User user) {
         log.debug("UserController: saving user={}", userRequestDto.getUsername());
-        return ResponseEntity.ok(userService.save(userRequestDto));
+        return ResponseEntity.ok(userService.save(userRequestDto, user));
     }
 
     @GetMapping
@@ -53,16 +54,16 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public @ResponseBody ResponseEntity<UserResponseDto> update(@RequestBody @Valid UserRequestDto user,
-                                                                @PathVariable UUID id) {
+    public @ResponseBody ResponseEntity<UserResponseDto> update(@RequestBody @Valid UserRequestDto userRequestDto,
+                                                                @PathVariable UUID id, @AuthenticationPrincipal User user) {
         log.debug("UserController: update user: {}", user);
-        return ResponseEntity.ok(userService.update(user, id));
+        return ResponseEntity.ok(userService.update(userRequestDto, id, user));
     }
 
     @DeleteMapping("/{id}")
-    public @ResponseBody ResponseEntity<?> delete(@PathVariable UUID id) {
+    public @ResponseBody ResponseEntity<?> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         log.debug("UserController: delete user: {}", id);
-        userService.deleteById(id);
+        userService.deleteById(id, user);
         return ResponseEntity.noContent().build();
     }
 }

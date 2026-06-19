@@ -2,6 +2,7 @@ package service.impl;
 
 import DTO.UserRequestDto;
 import DTO.UserResponseDto;
+import entities.Role;
 import entities.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import repository.UserRepository;
 import service.UserService;
 
+import java.util.Collections;
 import java.util.UUID;
 
 @Service
@@ -51,29 +53,43 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto save(UserRequestDto userDto) {
+    public UserResponseDto save(UserRequestDto userDto, User user) {
+        boolean isAdmin = user.getRoles().contains(Role.ADMIN);
         log.debug("UserService: Saving user={}", userDto);
-        User user = userMapper.userRequestDtoToUser(userDto);
-        user = userRepository.save(user);
-        log.info("User with username={} saved", user.getUsername());
-        return userMapper.userToUserResponseDto(user);
+        if (!isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You dont have permission to perform this operation");
+        }
+
+        User newUser = userMapper.userRequestDtoToUser(userDto);
+        newUser.setRoles(Collections.singletonList(Role.USER));
+        newUser = userRepository.save(newUser);
+        log.info("User with username={} saved", newUser.getUsername());
+        return userMapper.userToUserResponseDto(newUser);
     }
 
     @Override
-    public UserResponseDto update(UserRequestDto userDto, UUID id) {
-        User user = userMapper.userRequestDtoToUser(userDto);
+    public UserResponseDto update(UserRequestDto userRequestDto, UUID id, User user) {
         log.debug("UserService: Updating user with id={}", id);
-        return userMapper.userToUserResponseDto(userRepository.findById(id).map(user1 -> {
-            user1.setUsername(user.getUsername());
-            user1.setRoles(user.getRoles());
-            user1 = userRepository.save(user1);
-            log.info("User with username={} updated", user.getUsername());
-            return user1;
-        }).orElseThrow(() -> {
-            log.warn("User with id={} not found", id);
-            return new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "User with id %s is not found!".formatted(String.valueOf(id)));
-        }));
+        User targetUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User is not found"
+                ));
+
+        boolean isAdmin = user.getRoles().contains(Role.ADMIN);
+        boolean isOwner = user.getId().equals(targetUser.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You don't have permission to perform this operation"
+            );
+        }
+
+        targetUser.setUsername(userRequestDto.getUsername());
+        targetUser.setEmail(userRequestDto.getEmail());
+        log.info("User with username={} updated", targetUser.getUsername());
+        return userMapper.userToUserResponseDto(userRepository.save(targetUser));
     }
 
     @Override
@@ -90,8 +106,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public void deleteById(UUID id, User user) {
+        boolean isAdmin = user.getRoles().contains(Role.ADMIN);
         log.debug("UserService: Deleting user with id={}", id);
+        if (!isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to perform this operation");
+        }
         userRepository.deleteById(id);
         log.info("User with id={} deleted", id);
     }

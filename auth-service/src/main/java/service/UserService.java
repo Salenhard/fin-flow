@@ -19,11 +19,11 @@ public interface UserService extends UserDetailsService {
 
     void deleteByUsername(String username);
 
-    UserResponseDto save(UserRequestDto user);
+    UserResponseDto save(UserRequestDto userRequestDto, User user);
 
-    UserResponseDto update(UserRequestDto user, UUID id);
+    UserResponseDto update(UserRequestDto userRequestDto, UUID id, User user);
 
     UserResponseDto findById(UUID id);
 
-    void deleteById(UUID id);
+    void deleteById(UUID id, User user);
 }
