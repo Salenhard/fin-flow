@@ -1,8 +1,11 @@
 package service.impl;
 
+import DTO.UserRequestDto;
+import DTO.UserResponseDto;
 import entities.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mapstruct.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,41 +25,45 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    private final UserMapper userMapper;
+
     @Override
-    public User findByUsername(String username) {
-        log.debug("Searching user by username={}", username);
-        return userRepository.findByUsername(username).orElseThrow(() -> {
+    public UserResponseDto findByUsername(String username) {
+        log.debug("UserService: Searching user by username={}", username);
+        return userMapper.userToUserResponseDto(userRepository.findByUsername(username).orElseThrow(() -> {
             log.warn("User with username={} not found", username);
             return new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "User with username %s is not found".formatted(String.valueOf(username)));
-        });
+        }));
     }
 
     @Override
     public Page<User> findAll(Pageable pageable) {
-        log.debug("Searching all users");
+        log.debug("UserService: Searching all users");
         return userRepository.findAll(pageable);
     }
 
     @Override
     public void deleteByUsername(String username) {
-        log.debug("Deleting user by username={}", username);
+        log.debug("UserService: Deleting user by username={}", username);
         userRepository.deleteByUsername(username);
         log.info("User with username={} deleted", username);
     }
 
     @Override
-    public User save(User user) {
-        log.debug("Saving user={}", user);
+    public UserResponseDto save(UserRequestDto userDto) {
+        log.debug("UserService: Saving user={}", userDto);
+        User user = userMapper.userRequestDtoToUser(userDto);
         user = userRepository.save(user);
         log.info("User with username={} saved", user.getUsername());
-        return user;
+        return userMapper.userToUserResponseDto(user);
     }
 
     @Override
-    public User update(User user, UUID id) {
-        log.debug("Updating user with id={}", id);
-        return userRepository.findById(id).map(user1 -> {
+    public UserResponseDto update(UserRequestDto userDto, UUID id) {
+        User user = userMapper.userRequestDtoToUser(userDto);
+        log.debug("UserService: Updating user with id={}", id);
+        return userMapper.userToUserResponseDto(userRepository.findById(id).map(user1 -> {
             user1.setUsername(user.getUsername());
             user1.setRoles(user.getRoles());
             user1 = userRepository.save(user1);
@@ -66,11 +73,11 @@ public class UserServiceImpl implements UserService {
             log.warn("User with id={} not found", id);
             return new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "User with id %s is not found!".formatted(String.valueOf(id)));
-        });
+        }));
     }
 
     @Override
-    public User findById(UUID id) {
+    public UserResponseDto findById(UUID id) {
         log.debug("Finding user with id={}", id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
@@ -79,11 +86,23 @@ public class UserServiceImpl implements UserService {
                             "User with id %s is not found!".formatted(String.valueOf(id)));
                 });
         log.info("User with username={} found", user.getUsername());
-        return user;
+        return userMapper.userToUserResponseDto(user);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        log.debug("UserService: Deleting user with id={}", id);
+        userRepository.deleteById(id);
+        log.info("User with id={} deleted", id);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return this.findByUsername(username);
+        log.debug("Searching user by username={}", username);
+        return userRepository.findByUsername(username).orElseThrow(() -> {
+            log.warn("User with username={} not found", username);
+            return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "User with username %s is not found".formatted(username));
+        });
     }
 }

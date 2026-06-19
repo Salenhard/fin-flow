@@ -1,5 +1,7 @@
 package service;
 
+import DTO.UserRequestDto;
+import DTO.UserResponseDto;
 import entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,15 +13,17 @@ import java.util.UUID;
 
 public interface UserService extends UserDetailsService {
 
-    User findByUsername(String username);
+    UserResponseDto findByUsername(String username);
 
     Page<User> findAll(Pageable pageable);
 
     void deleteByUsername(String username);
 
-    User save(User user);
+    UserResponseDto save(UserRequestDto user);
 
-    User update(User user, UUID id);
+    UserResponseDto update(UserRequestDto user, UUID id);
 
-    User findById(UUID id);
+    UserResponseDto findById(UUID id);
+
+    void deleteById(UUID id);
 }
