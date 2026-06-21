@@ -2,8 +2,8 @@ package service.impl;
 
 import DTO.UserRequestDto;
 import DTO.UserResponseDto;
-import entities.Role;
-import entities.User;
+import entity.Role;
+import entity.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mapstruct.UserMapper;

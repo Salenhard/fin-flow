@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/finflow_auth
+    url: jdbc:postgresql://localhost:5432/finflow_order
     username: finflow
     password: finflow_pass
     driver-class-name: org.postgresql.Driver
@@ -12,9 +12,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 token:
   signing:

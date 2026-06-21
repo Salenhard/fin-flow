@@ -2,7 +2,7 @@ package mapstruct;
 
 import DTO.UserRequestDto;
 import DTO.UserResponseDto;
-import entities.User;
+import entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

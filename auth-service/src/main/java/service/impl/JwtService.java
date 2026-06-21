@@ -1,6 +1,6 @@
 package service.impl;
 
-import entities.User;
+import entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.util.function.Function;

@@ -3,7 +3,7 @@ package service;
 import DTO.ChangePassRequest;
 import DTO.SignInRequest;
 import DTO.SignUpRequest;
-import entities.User;
+import entity.User;
 
 public interface AuthService {
     String signIn(SignInRequest signInRequest);
