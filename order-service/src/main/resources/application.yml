@@ -12,7 +12,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
+  Kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 token:
   signing:
     key: B7QwpK5pzRGIf9PbIx5uIDhXgpDKDhHFWUvsIu3K1pK

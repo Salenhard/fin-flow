@@ -1,5 +1,7 @@
 package service.impl;
 
+import dto.OrderCancelledDto;
+import dto.OrderCreatedDto;
 import dto.OrderRequestDto;
 import dto.OrderResponseDto;
 import entity.AuthUser;
@@ -18,6 +20,7 @@ import service.OrderService;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -26,6 +29,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderRepository orderRepository;
+    private final OrderEventProducer orderEventProducer;
 
     @Override
     public Page<OrderResponseDto> findByUserId(UUID userId, Pageable pageable, AuthUser authUser) {
@@ -51,6 +55,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto save(OrderRequestDto orderRequestDto, AuthUser authUser) {
         log.debug("save order requestDto={}, user={}", orderRequestDto, authUser.username());
+
         Order order = new Order();
         order.setUserId(authUser.id());
         order.setPrice(orderRequestDto.getPrice());
@@ -58,6 +63,18 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDate(Timestamp.from(Instant.now()));
         order.setCreatedAt(Timestamp.from(Instant.now()));
         order = orderRepository.save(order);
+
+        OrderCreatedDto orderCreatedDto = new OrderCreatedDto(
+                UUID.randomUUID(),
+                order.getId(),
+                order.getUserId(),
+                order.getPrice(),
+                order.getStatus().name(),
+                LocalDateTime.now()
+        );
+
+        orderEventProducer.sendOrderCreated(orderCreatedDto);
+
         log.info("save order responseDto={}", order);
         return orderMapper.entityToResponseDto(order);
     }
@@ -100,13 +117,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto cancel(UUID id, AuthUser authUser) {
         log.debug("cancel order id={}, user={}", id, authUser.username());
+
         if (!(authUser.isAdmin() || id.equals(authUser.id()))) {
             log.warn("User not allowed to cancel order");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You dont have permission to perform this operation");
         }
+
         Order order = getById(id);
         order.setStatus(Status.Cancelled);
         order = orderRepository.save(order);
+
+        OrderCancelledDto orderCancelledDto = new OrderCancelledDto(
+                UUID.randomUUID(),
+                order.getId(),
+                order.getUserId(),
+                "USER_CANCELLED",
+                LocalDateTime.now()
+        );
+        orderEventProducer.sendOrderCanceled(orderCancelledDto);
+
         OrderResponseDto responseDto = orderMapper.entityToResponseDto(order);
         log.info("cancel order responseDto={}", responseDto);
         return responseDto;
