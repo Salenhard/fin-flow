@@ -58,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = new Order();
         order.setUserId(authUser.id());
-        order.setPrice(orderRequestDto.getPrice());
+        order.setAmount(orderRequestDto.getAmount());
         order.setStatus(Status.Pending);
         order.setOrderDate(Timestamp.from(Instant.now()));
         order.setCreatedAt(Timestamp.from(Instant.now()));
@@ -68,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
                 UUID.randomUUID(),
                 order.getId(),
                 order.getUserId(),
-                order.getPrice(),
+                order.getAmount(),
                 order.getStatus().name(),
                 LocalDateTime.now()
         );
@@ -89,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN
                     , "You dont have permission to perform this operation");
         }
-        order.setPrice(orderRequestDto.getPrice());
+        order.setAmount(orderRequestDto.getAmount());
         OrderResponseDto responseDto = orderMapper.entityToResponseDto(orderRepository.save(order));
         log.info("update order responseDto={}", order);
         return responseDto;

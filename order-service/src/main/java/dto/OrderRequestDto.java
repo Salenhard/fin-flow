@@ -10,5 +10,5 @@ import java.math.BigDecimal;
 public class OrderRequestDto {
     @Min(1)
     @NotNull
-    BigDecimal price;
+    BigDecimal amount;
 }
