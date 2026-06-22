@@ -24,8 +24,12 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic orderCreated()
-    {
+    public NewTopic orderCreated() {
         return new NewTopic("order.created", 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic orderCanceled() {
+        return new NewTopic("order.cancled", 1, (short) 1);
     }
 }

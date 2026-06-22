@@ -1,7 +1,7 @@
 package service.impl;
 
-import dto.OrderCancelledDto;
-import dto.OrderCreatedDto;
+import dto.OrderCancelledEvent;
+import dto.OrderCreatedEvent;
 import dto.OrderRequestDto;
 import dto.OrderResponseDto;
 import entity.AuthUser;
@@ -64,16 +64,16 @@ public class OrderServiceImpl implements OrderService {
         order.setCreatedAt(Timestamp.from(Instant.now()));
         order = orderRepository.save(order);
 
-        OrderCreatedDto orderCreatedDto = new OrderCreatedDto(
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
                 UUID.randomUUID(),
                 order.getId(),
                 order.getUserId(),
                 order.getAmount(),
                 order.getStatus().name(),
-                LocalDateTime.now()
+                Timestamp.from(Instant.now())
         );
 
-        orderEventProducer.sendOrderCreated(orderCreatedDto);
+        orderEventProducer.sendOrderCreated(orderCreatedEvent);
 
         log.info("save order responseDto={}", order);
         return orderMapper.entityToResponseDto(order);
@@ -127,14 +127,14 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(Status.Cancelled);
         order = orderRepository.save(order);
 
-        OrderCancelledDto orderCancelledDto = new OrderCancelledDto(
+        OrderCancelledEvent orderCancelledEvent = new OrderCancelledEvent(
                 UUID.randomUUID(),
                 order.getId(),
                 order.getUserId(),
                 "USER_CANCELLED",
-                LocalDateTime.now()
+                Timestamp.from(Instant.now())
         );
-        orderEventProducer.sendOrderCanceled(orderCancelledDto);
+        orderEventProducer.sendOrderCanceled(orderCancelledEvent);
 
         OrderResponseDto responseDto = orderMapper.entityToResponseDto(order);
         log.info("cancel order responseDto={}", responseDto);

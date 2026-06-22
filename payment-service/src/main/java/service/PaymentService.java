@@ -1,20 +1,17 @@
 package service;
 
-import dto.PaymentDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import dto.OrderCreatedEvent;
+import dto.PaymentEvent;
 
 import java.util.UUID;
 
 public interface PaymentService {
 
-    public void sendPayment(PaymentDto paymentDto);
+    public void processOrderCreated(OrderCreatedEvent event);
 
-    public PaymentDto findPaymentById(UUID id);
+    public PaymentEvent findPaymentById(UUID id);
 
-    public PaymentDto findPaymentByOrderId(UUID orderId);
-
-    public Page<PaymentDto> findPaymentByOrderId(UUID orderId, Pageable pageable);
+    public PaymentEvent findPaymentByOrderId(UUID orderId);
 
     public void deleteById(UUID id);
 

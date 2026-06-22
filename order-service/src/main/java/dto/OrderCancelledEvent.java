@@ -1,13 +1,13 @@
 package dto;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
-public record OrderCancelledDto(
+public record OrderCancelledEvent(
         UUID eventId,
         UUID orderId,
         UUID userId,
         String reason,
-        LocalDateTime cancelledAt
+        Timestamp cancelledAt
 ) {
 }

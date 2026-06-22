@@ -17,7 +17,8 @@ public class Payment {
     @Column(name = "id", nullable = false)
     private UUID id;
     private UUID userId;
-    private UUID paymentId;
+    @Column(unique = true, nullable = false)
+    private UUID orderId;
     private BigDecimal amount;
     private Status status;
     private Timestamp createdAt;

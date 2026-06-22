@@ -3,10 +3,10 @@ package dto;
 import entity.Status;
 
 import java.math.BigDecimal;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.UUID;
 
-public record PaymentDto(
+public record PaymentEvent(
         UUID id,
         UUID orderId,
         UUID userId,
